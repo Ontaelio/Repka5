@@ -402,6 +402,16 @@ def game_core():
                             if lives_per_level > 3:
                                 lives += 1
                                 print_lives(lives - 1)
+
+                        # the break below actually produced a rare and almost inabusable
+                        # bug with _wrong_ life crystal being shut down on the same X axis.
+                        # (as in, a new one was created after shooting, and it happens to
+                        # sit on the same X axis or really close to it; the code finds the
+                        # first one and breaks, then repeats when get_pixel() returns yellow
+                        # _again_ on the next step, and so on until we pass the crystal,
+                        # producing a ton of lives. It still gives one extra yellow crystal,
+                        # but that's all). Without the break both crystals are shut down.
+                        # Same for ammo below.
                         #break
 
             # ammo crate
@@ -426,7 +436,19 @@ def game_core():
                 sy = randint(1, 49) + screen_height + 50
 
                 ##print(spc)
-                play_sound(int(spc*100 + 37), 1)
+                try:
+                    play_sound(int(spc*100 + 37), 1)
+                except ValueError:
+                    # This is a rare bug that happens on later evels if a life crystal was
+                    # partially destroyed by an explosion, exposing it's cyan 'eye', and the
+                    # active pixel wanders right into it.
+                    # This produces a ton of points (like 360), but otherwise is harmless.
+                    # Can it be exploited? Sure. But such marksmanship should be rewarded!
+                    #
+                    #print('Sound error caught. spc ==', spc,'getpixel =', current_pixel)
+                    #save_image('bug_'+str(randint(0,1000))+'.png')
+                    print('* Jackpot! * ', spc//10, 'pts.')
+                    
                 
                 put_pixel(sx, sy, current_pixel)
                 # print(int(a))
@@ -594,6 +616,7 @@ def main():
 
             ## title screen returns the key pressed
             next_stage = title_screen_wait()
+            #save_image('test'+str(randint(0,1000))+'.png')
             if music_is_on: stop_song()
 
         if next_stage != key_ESC:
