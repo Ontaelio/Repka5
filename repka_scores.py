@@ -4,11 +4,12 @@ from random import *
 from easygraphics import *
 from repka_defaults import *
 
-def check_table(filename = scores_file[play_mode]):
+def check_table(play_mode):
     '''
     Check whether scores file is present, and if not,
     create it and fill with default values
     '''
+    filename = scores_file[play_mode]
     score_table = []
     try:
         with open(filename, 'r') as score_file:
@@ -28,10 +29,11 @@ def check_table(filename = scores_file[play_mode]):
     score_table.sort(key = lambda x: x[2], reverse = True)
     return score_table
 
-def write_table(score_table, filename = scores_file[play_mode]):
+def write_table(score_table, play_mode):
     '''
     Write the record table into a file
     '''
+    filename = scores_file[play_mode]
     try:
         with open(filename, 'w') as score_file:
             json.dump(score_table, score_file)

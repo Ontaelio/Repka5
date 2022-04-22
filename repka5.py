@@ -144,7 +144,30 @@ def expanding_circle(x, y, r = 25):
     put_pixel(x-2,y-5,Color.BLACK)
     put_pixel(x+2,y-5,Color.BLACK)
 
+def draw_level_select(buf, lvl = None):
+    #set_antialiasing(False)
+    #set_write_mode(32)
+    #p = QtGui.QPainter()
+    #easygraphics.image.Image
+    
+    
+    txt_pos_x = (screen_width//4 - 50, screen_width//2 - 50, screen_width//4*3 - 50)
+    txt_pos_y = screen_height + 50 - 30
+    set_font(scores_screen_font)
+    set_color(used_up_color)
 
+    put_image(0, txt_pos_y, buf, screen_width, 20)
+    #p.beginNativePainting()
+    for k, m in enumerate(play_modes):
+        draw_rect_text(txt_pos_x[k], txt_pos_y,
+                       100, 20, m, flags = QtCore.Qt.AlignHCenter)
+
+    if lvl != None:
+        set_color(0xFFFFFF)
+        draw_rect_text(txt_pos_x[lvl], txt_pos_y,
+                       100, 20, play_modes[lvl], flags = QtCore.Qt.AlignHCenter)
+
+    
 
 def draw_title_screen():
     set_background_color(0x100328)
@@ -161,9 +184,27 @@ def draw_title_screen():
     print_repka(title_repka_color_1, title_repka_fill_1)
     print_repka(title_repka_color_2, title_repka_fill_2)
     print_5 (title_5_color_1, title_5_fill_1)
+    set_antialiasing(False)
 
+    buf = create_image(screen_width, 20)
+    get_image(0, screen_height + 50 - 30, screen_width, 20, buf)
+    draw_level_select(buf, 0)
+    #save_image('bug_'+str(randint(0,1000))+'.png')
+    return buf
 
-def title_screen_wait():
+def mode_select(b, m, key):
+    if key == key_left and m > 0:
+        m -= 1
+        draw_level_select(b, m)
+        
+    if key == key_right and m < 2:
+        m += 1
+        draw_level_select(b, m)
+        
+    return m
+    
+
+def title_screen_wait(buf, m_sel=0):
     stars = {}
 
     # create a dict to hold stars
@@ -176,12 +217,16 @@ def title_screen_wait():
 
     if has_kb_msg(): a = get_key()
     a = None
+    aa = None
+    m_sel = 0
 
     ## wait for a key to be _released_ (7)
-    while a != 7:
+    while a != 7 or aa.key in [key_left, key_right]:
         if has_kb_msg():
             aa = get_key()
             a = aa.type
+            if a == 6 and aa.key in [key_left, key_right]:
+                m_sel = mode_select(buf, m_sel, aa.key)
         k = randint(0, 99)
 
         # if this star is not active
@@ -203,9 +248,9 @@ def title_screen_wait():
             stars[k][3] = False
 
     #print(aa.key)
-    return aa.key
+    return aa.key, m_sel
 
-def game_core():
+def game_core(play_mode):
     global now_playing
     
     curpos_x = 0
@@ -503,7 +548,7 @@ def game_core():
 
     return level, points
 
-def after_game(level, points, score_table):
+def after_game(level, points, score_table, play_mode):
     ## game end                
     # print(points)
 
@@ -522,7 +567,7 @@ def after_game(level, points, score_table):
     set_font(scores_screen_font)
 
     draw_rect_text(scores_rect_x1, scores_rect_y1 - 25,
-                       400, 20, 'T O P  S C O R E S')
+                       400, 20, top_scores_modes[play_mode])
     
     highscore = 0
     for k, entry in enumerate(score_table):
@@ -552,7 +597,7 @@ def after_game(level, points, score_table):
         score_table[k][0] = get_name(k, random_name())
         set_color((((31 - k//2) * 8) << 16) + (((27 - k) * 8) << 8))
         print_score_name(k, score_table[k][0])
-        write_table(score_table)
+        write_table(score_table, play_mode)
 
     set_color(used_up_color)
     scores_screen_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, 1)
@@ -589,8 +634,8 @@ def main():
     global music_is_on
     global now_playing
     
-    
-    score_table = check_table()    
+    play_mode = 0
+       
     init_graph(screen_width, screen_height+100)
     set_caption('Repka 5')
     if music_is_on:
@@ -611,17 +656,18 @@ def main():
             ## title screen
             set_antialiasing(True)
             if music_is_on: play_song(title_track)
-            draw_title_screen()
+            menu_buffer = draw_title_screen()
             
 
             ## title screen returns the key pressed
-            next_stage = title_screen_wait()
+            next_stage, play_mode = title_screen_wait(menu_buffer)
+            score_table = check_table(play_mode)
             #save_image('test'+str(randint(0,1000))+'.png')
             if music_is_on: stop_song()
 
         if next_stage != key_ESC:
             
-            level, points = game_core()
+            level, points = game_core(play_mode)
             if music_is_on: stop_song()
         else:
             level = 0
@@ -630,7 +676,7 @@ def main():
         set_antialiasing(True)
         if music_is_on: play_song(scores_track)
         now_playing = scores_track
-        next_stage = after_game(level, points, score_table)
+        next_stage = after_game(level, points, score_table, play_mode)
         if music_is_on: stop_song()
 
         if next_stage == key_F10:

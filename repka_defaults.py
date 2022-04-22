@@ -28,7 +28,11 @@ game_stats_font = QtGui.QFont("Century Gothic", 18)
 scores_name_prefix = '_date'
 
 
-play_mode = 1
+#play_mode = 1
+play_modes = ('normal', 'skip10', 'berserk')
+top_scores_modes = ('N O R M A L   S C O R E S',
+                    'S K I P 1 0   S C O R E S',
+                    'B E R S E R K   S C O R E S')
 starting_level = (1, 11, 1)
 
 # music_is_on = 1
@@ -135,6 +139,8 @@ spice_density = (2500, 2500, 3000)
 
 key_up = 16777235
 key_down = 16777237
+key_right = 16777236
+key_left = 16777234
 key_F10 = 16777273
 key_fire = 32
 key_ESC = 16777216
