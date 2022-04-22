@@ -20,9 +20,6 @@ device = miniaudio.PlaybackDevice(output_format=miniaudio.SampleFormat.SIGNED16,
 xmp = libxmplite.Xmp()
 now_playing = ''
 
-
-playlist = ['DEADLOCK.XM', 'ASTRAY.S3M', 'SHADOWRU.MOD', '2ND_PM.S3M']
-
 '''
 Playlist can be downloaded here:
 
@@ -45,6 +42,12 @@ normal_track = 'dust_particles.mod'
 fast_track = 'dancecore.mod'
 # faster_track = 'different_waves.mod'
 fastest_track = 'acidgod.mod'
+
+slowest_fps = (28,35,0) ##less_than
+slow_fps = (35,40,0) ##less_than
+normal_fps = (40,40,60)
+fast_fps = (48,48,59) ##more_than
+fastest_fps = (60,60,79) ##more_than
 
 def check_music_files():
     if not exists(title_track):
@@ -113,14 +116,15 @@ def stop_song():
 def close_music_device():
     device.close()
 
-def select_track(speed):
+def select_track(speed, mode):
     global now_playing    
-    if speed < 28: track = slowest_track
-    elif speed < 35: track = slow_track
-    elif speed > 60: track = fastest_track
-    elif speed > 48: track = fast_track
+    if speed < slowest_fps[mode]: track = slowest_track
+    elif speed < slow_fps[mode]: track = slow_track
+    elif speed > fastest_fps[mode]: track = fastest_track
+    elif speed > fast_fps[mode]: track = fast_track
     elif now_playing != start_track: track = normal_track
     else: return now_playing
+    # print(now_playing, track)
     return track
     
     

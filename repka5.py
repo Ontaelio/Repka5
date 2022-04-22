@@ -214,7 +214,7 @@ def game_core():
     fps_delay = default_fps_delay[play_mode]
     was_dead = 0
     level = starting_level[play_mode]
-    lives = starting_lives - 1
+    lives = starting_lives - (play_mode != 2)*1
     points = 0
     ammo = starting_ammo
 
@@ -235,12 +235,14 @@ def game_core():
     while lives > 0:
 
         if music_is_on:
-            if level == starting_level[play_mode]:
+            if play_mode == 0 and level == starting_level[play_mode]:
                 play_song(start_track)
                 now_playing = start_track            
             else:
-                track = select_track(fps_delay)
+                track = select_track(fps_delay, play_mode)
+                #print(track, now_playing)
                 if track != now_playing:
+                    #print(f'playing: {now_playing}, changing track')
                     stop_song()
                     play_song(track)
                     now_playing = track
@@ -249,6 +251,9 @@ def game_core():
         # background color aka spice_base (random after lvl 30)
         if level < 31: spice_base = bg_color[level]
         else: spice_base = bg_color[randint(23,30)]
+
+        if play_mode == 2: spice_base = hcore_color[randint(0,6)]
+        
         set_background_color(spice_base)
 
         spice_collected = 0
@@ -261,7 +266,7 @@ def game_core():
         bullets_explosion = []
         expl_radius = 0
 
-        lives += 1
+        if play_mode != 2: lives += 1
 
         print('Level:', level)
         print('FPS:', fps_delay)
@@ -270,7 +275,9 @@ def game_core():
         
 
         ## draw spice
-        random_spice(level, 2500, spice_base)
+        random_spice(level + (play_mode == 2)*10,
+                     spice_density[play_mode],
+                     spice_base)
         ## draw red spheres (qty)
         if level % 10:
             draw_obstacles(starting_obstacles + obstacles_per_level * level)
@@ -379,25 +386,31 @@ def game_core():
 
             # life crystal
             elif current_pixel == life_gem_color:                
-                draw_life_crystal(lives_per_level * 15 + 15, screen_height + 65)
-                lives_per_level +=1
-                if lives_per_level > 3:
-                    lives += 1
-                    print_lives(lives - 1)
+                
                 for u in life_crystals:
                     if abs(curpos_x - u[0]) < 10:
                         draw_life_crystal(u[0], u[1], False)
-                        break
+                        draw_life_crystal(lives_per_level * 15 + 15, screen_height + 65)
+                        if play_mode == 2:
+                            lives += 1
+                            print_lives(lives - 1)
+                        else:
+                            lives_per_level +=1
+                            if lives_per_level > 3:
+                                lives += 1
+                                print_lives(lives - 1)
+                        #break
 
             # ammo crate
             elif current_pixel == crate_body_color:                
                 # pulia vnizu(lives_per_level * 15 + 10, screen_height + 65)
-                ammo += 10
-                draw_bullets(ammo)
+                
                 for u in ammo_crates:
                     if abs(curpos_x - u[0]) < 10:
                         draw_ammo_crate(u[0], u[1], False)
-                        break
+                        ammo += 10
+                        draw_bullets(ammo)
+                        #break
 
             # spice check
             elif (current_pixel != used_up_color
@@ -410,7 +423,7 @@ def game_core():
                 sy = randint(1, 49) + screen_height + 50
 
                 ##print(spc)
-                play_sound(int(spc*100), 1)
+                play_sound(int(spc*100 + 37), 1)
                 
                 put_pixel(sx, sy, current_pixel)
                 # print(int(a))
@@ -447,7 +460,7 @@ def game_core():
         if lives:
             level +=1
             points += round(spice_collected / 10)
-            ammo += ammo_per_level
+            if play_mode != 2: ammo += ammo_per_level
         
             if play_mode == 2:
                 fps_delay += 4
@@ -549,6 +562,7 @@ def after_game(level, points, score_table):
     
 def main():
     global music_is_on
+    global now_playing
     
     
     score_table = check_table()    
@@ -589,6 +603,7 @@ def main():
 
         set_antialiasing(True)
         if music_is_on: play_song(scores_track)
+        now_playing = scores_track
         next_stage = after_game(level, points, score_table)
         if music_is_on: stop_song()
 
