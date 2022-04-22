@@ -28,7 +28,7 @@ game_stats_font = QtGui.QFont("Century Gothic", 18)
 scores_name_prefix = '_date'
 
 
-play_mode = 2
+play_mode = 1
 starting_level = (1, 11, 1)
 
 # music_is_on = 1
@@ -111,16 +111,27 @@ bg_color = (0x000000,
             0x000204,
             0x030102) #30
 
-hcore_color = (0x000010,
+hcore_color = (0x000000,
+               0x000020,
+               0x002000,
+               0x101000,
+               0x001010,
+               0x100010,
+               0x000010,
                0x001000,
                0x070003,
                0x000505,
                0x050500,
                0x050005,
                0x040303,
+               0x030700,
+               0x000703,
+               0x030007,
+               0x000307,
+               0x070300, #[17]
                )
 
-spice_density = (2500, 2500, 2500)
+spice_density = (2500, 2500, 3000)
 
 key_up = 16777235
 key_down = 16777237

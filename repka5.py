@@ -252,7 +252,10 @@ def game_core():
         if level < 31: spice_base = bg_color[level]
         else: spice_base = bg_color[randint(23,30)]
 
-        if play_mode == 2: spice_base = hcore_color[randint(0,6)]
+        if play_mode == 2:
+            if level < 6: spice_base = hcore_color[level]
+            else:
+                spice_base = hcore_color[randint(6,17)]
         
         set_background_color(spice_base)
 
@@ -275,7 +278,7 @@ def game_core():
         
 
         ## draw spice
-        random_spice(level + (play_mode == 2)*10,
+        random_spice(level + (play_mode == 2)*5,
                      spice_density[play_mode],
                      spice_base)
         ## draw red spheres (qty)
