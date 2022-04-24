@@ -151,12 +151,11 @@ def draw_level_select(buf, lvl = None):
     #easygraphics.image.Image
     
     
-    txt_pos_x = (screen_width//4 - 50, screen_width//2 - 50, screen_width//4*3 - 50)
-    txt_pos_y = screen_height + 50 - 30
+    
     set_font(scores_screen_font)
     set_color(used_up_color)
 
-    put_image(0, txt_pos_y, buf, screen_width, 20)
+    put_image(0, txt_pos_y, buf) #, screen_width, 20)
     #p.beginNativePainting()
     for k, m in enumerate(play_modes):
         draw_rect_text(txt_pos_x[k], txt_pos_y,
@@ -169,7 +168,7 @@ def draw_level_select(buf, lvl = None):
 
     
 
-def draw_title_screen():
+def draw_title_screen(play_mode):
     set_background_color(0x100328)
     set_fill_style(1)
     clear_device()
@@ -187,8 +186,8 @@ def draw_title_screen():
     set_antialiasing(False)
 
     buf = create_image(screen_width, 20)
-    get_image(0, screen_height + 50 - 30, screen_width, 20, buf)
-    draw_level_select(buf, 0)
+    get_image(0, txt_pos_y, screen_width, 20, buf)
+    draw_level_select(buf, play_mode)
     #save_image('bug_'+str(randint(0,1000))+'.png')
     return buf
 
@@ -204,7 +203,7 @@ def mode_select(b, m, key):
     return m
     
 
-def title_screen_wait(buf, m_sel=0):
+def title_screen_wait(buf, m_sel):
     stars = {}
 
     # create a dict to hold stars
@@ -218,7 +217,7 @@ def title_screen_wait(buf, m_sel=0):
     if has_kb_msg(): a = get_key()
     a = None
     aa = None
-    m_sel = 0
+    
 
     ## wait for a key to be _released_ (7)
     while a != 7 or aa.key in [key_left, key_right]:
@@ -249,6 +248,30 @@ def title_screen_wait(buf, m_sel=0):
 
     #print(aa.key)
     return aa.key, m_sel
+
+def advance_hero(curpos_x, curpos_y, fps_delay, direction, was_dead):
+    ## Testing for the bloody trail
+    if was_dead:
+        if delay_jfps(fps_delay):
+            put_pixel(curpos_x, curpos_y, dead_color[was_dead])
+            put_pixel(curpos_x-1, curpos_y, dead_color[was_dead])
+            was_dead -= 1
+            return was_dead
+
+    ## normal while pixel with shadow
+    
+    else:
+        if delay_jfps(fps_delay):
+            #put_pixel(curpos_x-1, curpos_y + 1, 0)
+            put_pixel(curpos_x-1, curpos_y, 0xFFFFFF)
+                
+            #put_pixel(curpos_x, curpos_y + 1, 0)
+            put_pixel(curpos_x, curpos_y, 0xFFFFFF)
+        if direction == 1:
+            put_pixel(curpos_x-1, curpos_y + 2, 0)
+        else:
+            put_pixel(curpos_x, curpos_y + 1, 0)
+    
 
 def game_core(play_mode):
     global now_playing
@@ -402,18 +425,7 @@ def game_core(play_mode):
                     
                     
 
-            ## Testing for the bloody trail
-            if was_dead:
-                if delay_jfps(fps_delay):
-                    put_pixel(curpos_x, curpos_y, dead_color[was_dead])
-                    was_dead -= 1
-
-            ## normal while pixel with shadow
-            
-            else:
-                if delay_jfps(fps_delay):
-                    put_pixel(curpos_x, curpos_y, 0xFFFFFF)
-                    put_pixel(curpos_x, curpos_y + 1, 0)
+            was_dead = advance_hero(curpos_x, curpos_y, fps_delay, direction, was_dead)
                 
 
             ## advance position
@@ -566,7 +578,7 @@ def after_game(level, points, score_table, play_mode):
     scores_screen_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, 4)
     set_font(scores_screen_font)
 
-    draw_rect_text(scores_rect_x1, scores_rect_y1 - 25,
+    draw_rect_text(scores_rect_x1, scores_rect_y1 - 20,
                        400, 20, top_scores_modes[play_mode])
     
     highscore = 0
@@ -656,11 +668,11 @@ def main():
             ## title screen
             set_antialiasing(True)
             if music_is_on: play_song(title_track)
-            menu_buffer = draw_title_screen()
+            menu_buffer = draw_title_screen(play_mode)
             
 
             ## title screen returns the key pressed
-            next_stage, play_mode = title_screen_wait(menu_buffer)
+            next_stage, play_mode = title_screen_wait(menu_buffer, play_mode)
             score_table = check_table(play_mode)
             #save_image('test'+str(randint(0,1000))+'.png')
             if music_is_on: stop_song()

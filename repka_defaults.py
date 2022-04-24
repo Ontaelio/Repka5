@@ -22,6 +22,9 @@ title_5_color_1 = 0xFFFF00
 title_5_fill_1 = 8
 default_twinkling_stars = 120
 
+txt_pos_x = (screen_width//4 - 50, screen_width//2 - 50, screen_width//4*3 - 50)
+txt_pos_y = screen_height + 50 - 40
+
 scores_screen_font = QtGui.QFont("Century Gothic", 12)
 game_stats_font = QtGui.QFont("Century Gothic", 18)
 #scores_name_prefix = 'Player_'

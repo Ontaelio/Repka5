@@ -3,6 +3,7 @@ from random import *
 
 from repka_defaults import *
 
+# letter blocks
 repka_r = ([0,0],
            [0,1],
            [0,2],
@@ -71,9 +72,9 @@ repka_5 = ([0,0],
 
 t_space_x = (screen_width / 20, 20)
 t_block_size = (screen_width / 20, 20)
-t_start_point_x = (screen_width / 40, scores_rect_x1 - 1)
-t_start_point_y = (screen_height /6, scores_rect_y1 - t_block_size[1] * 4 - 40)
-start_point_5 = t_start_point_y[0] + t_block_size[0] * 5
+t_start_point_x = (screen_width / 40, scores_rect_x1 + 5)
+t_start_point_y = (screen_height /6  - 6, scores_rect_y1 - t_block_size[1] * 4 - 37)
+start_point_5 = t_start_point_y[0] + t_block_size[0] * 5 - 20
 
 def paint_block(x, y, side_size = t_block_size[0]):
     '''

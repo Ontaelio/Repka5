@@ -67,7 +67,7 @@ def random_name(n = scores_name_prefix):
 
     if n == '_date':
         today = date.today()
-        d = today.strftime("%d.%m.%y")
+        d = today.strftime("%d.%m")
         return (s.title() + '_' + d)
     else:
         return (n + s.title())
