@@ -72,7 +72,7 @@ def write_table(score_table, play_mode):
         with open(filename, 'w') as score_file:
             json.dump(score_table, score_file)
     except PermissionError as e:
-        print("File 'repsa5.rep' is write-protected.\n"
+        print(f"File '{filename}' is write-protected.\n"
               "High scores are not saved.")
 
 ## lazy random name generator. For great justice!

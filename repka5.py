@@ -709,6 +709,7 @@ def main():
         if next_stage != key_ESC:
             
             level, points = game_core(play_mode)
+            points += 1600
             if music_is_on: stop_song()
         else:
             level = 0
@@ -734,5 +735,5 @@ def main():
     if music_is_on: close_music_device()
     
 
-
-easy_run(main)
+main()
+#easy_run(main)
