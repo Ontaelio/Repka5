@@ -45,6 +45,12 @@ def flush_keyboard():
     while has_kb_msg(): tmp = get_key()
 
 def random_spice(number, qty, c):
+    '''
+    Draws 'spice' (aka nebulae) on the screen.
+    number = number of nebulaes
+    qty = size of nebulae
+    c = color
+    '''
 
     step_x = int(screen_width / (number + 1))
     y = randint(screen_height/2, screen_height/2 + 100)
@@ -74,6 +80,10 @@ def random_spice(number, qty, c):
 
 
 def collapsing_xor_circle(x, y, r = 30):
+    '''
+    not used, written for a non-implemented alternative trick ('dive')
+    draws a collapsing circle using XOR, blocking
+    '''
 
     set_color(0xFFFFFF)
     set_write_mode(mode_XOR)
@@ -85,6 +95,13 @@ def collapsing_xor_circle(x, y, r = 30):
     set_write_mode(0)
 
 def starting_xor_circle(x, y, r, fps, color):
+    '''
+    draws an expanding circle at the starting point.
+    waits for keyboard input
+    x, y, r = circle
+    fps = current fps
+    color = color
+    '''
 
     set_color(color)
     set_write_mode(26)
@@ -101,6 +118,12 @@ def starting_xor_circle(x, y, r, fps, color):
     
 
 def expanding_circle(x, y, r = 25):
+    '''
+    Explosion after colliding with a red sphere and dying.
+    Not the same as bullet-hit one.
+    x, y = coordinates;
+    r=25 by default
+    '''
 
     set_color(0xFFFF00)
     set_fill_color(get_background_color())
@@ -145,19 +168,19 @@ def expanding_circle(x, y, r = 25):
     put_pixel(x+2,y-5,Color.BLACK)
 
 def draw_level_select(buf, lvl = None):
-    #set_antialiasing(False)
-    #set_write_mode(32)
-    #p = QtGui.QPainter()
-    #easygraphics.image.Image
-    
-    
+    '''
+    draws (or re-draws) play mode select strings.
+    takes arguments: buf, lvl = None
+    buf = a get_image() image under the select string
+    lvl = current mode to highlight (none is highlighted if None)
+    '''
     
     set_font(scores_screen_font)
     set_color(used_up_color)
 
     put_image(0, txt_pos_y, buf) #, screen_width, 20)
     #p.beginNativePainting()
-    for k, m in enumerate(play_modes):
+    for k, m in enumerate(open_modes):
         draw_rect_text(txt_pos_x[k], txt_pos_y,
                        100, 20, m, flags = QtCore.Qt.AlignHCenter)
 
@@ -197,7 +220,7 @@ def mode_select(b, m, key):
         draw_level_select(b, m)
         
     if key == key_right and m < 2:
-        m += 1
+        if open_modes[m+1] != 'locked': m += 1
         draw_level_select(b, m)
         
     return m
@@ -611,6 +634,11 @@ def after_game(level, points, score_table, play_mode):
         print_score_name(k, score_table[k][0])
         write_table(score_table, play_mode)
 
+        if k == 0 and play_mode != 2:
+            ## make new playmode available
+            if open_modes[play_mode + 1] == 'locked':
+                open_modes[play_mode + 1] = play_modes[play_mode + 1]
+
     set_color(used_up_color)
     scores_screen_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, 1)
     set_font(scores_screen_font)
@@ -647,6 +675,7 @@ def main():
     global now_playing
     
     play_mode = 0
+    check_unlocked_modes()
        
     init_graph(screen_width, screen_height+100)
     set_caption('Repka 5')

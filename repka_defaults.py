@@ -14,9 +14,9 @@ scores_rect_y1 = 180
 scores_rect_y2 = 600
 scores_width = scores_rect_x2 - scores_rect_x1
 
-title_repka_color_1 = 0xFF00FF
+title_repka_color_1 = 0x0000FF
 title_repka_fill_1 = 7
-title_repka_color_2 = 0x999900
+title_repka_color_2 = 0x00FF00
 title_repka_fill_2 = 8
 title_5_color_1 = 0xFFFF00
 title_5_fill_1 = 8
@@ -33,6 +33,7 @@ scores_name_prefix = '_date'
 
 #play_mode = 1
 play_modes = ('normal', 'skip10', 'berserk')
+open_modes = ['normal', 'locked', 'locked']
 top_scores_modes = ('N O R M A L   S C O R E S',
                     'S K I P 1 0   S C O R E S',
                     'B E R S E R K   S C O R E S')

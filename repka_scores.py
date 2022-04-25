@@ -1,8 +1,25 @@
 import json
 from datetime import date
 from random import *
+from os.path import exists
+
 from easygraphics import *
+
 from repka_defaults import *
+
+def create_scores(play_mode):
+    '''
+    modify default_score_table to allow for skip10 mode
+    (add 6 levels to skip10)
+    '''
+    
+    if play_modes[play_mode] != 'skip10':
+        return default_score_table
+    else:
+        s = default_score_table
+        for r in s:
+            r[1] += 6
+        return s
 
 def check_table(play_mode):
     '''
@@ -16,7 +33,7 @@ def check_table(play_mode):
             score_table = json.load(score_file)# = open(filename, 'r')
     except FileNotFoundError as e:
         with open(filename, 'w') as score_file:
-            score_table = default_score_table
+            score_table = create_scores(play_mode)
             json.dump(score_table, score_file)
 
     except json.decoder.JSONDecodeError as e:
@@ -28,6 +45,23 @@ def check_table(play_mode):
     # sort by score, just in case
     score_table.sort(key = lambda x: x[2], reverse = True)
     return score_table
+
+def check_unlocked_modes():
+    '''
+    check what modes are available at the start of the game
+    '''
+
+    if not exists(scores_file[0]): return 0
+    scores = check_table(0)
+    if scores == -1: return -1
+    ##a_modes = [play_modes[0], 'locked', 'locked']
+    if scores[0][2] > default_score_table[0][2]:
+        scores = check_table(1)
+        open_modes[1] = play_modes[1]
+    if scores[0][2] > default_score_table[0][2]:
+        #scores = check_table(2)
+        open_modes[2] = play_modes[2]
+    #return a_modes
 
 def write_table(score_table, play_mode):
     '''
