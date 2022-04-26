@@ -29,7 +29,6 @@ else:
         ''' play a single beep sound '''
         winsound.Beep(frequency, duration)
 
-
 from repka_items import *
 from repka_defaults import *
 from repka_title import *
@@ -37,46 +36,7 @@ from repka_scores import *
 from repka_music import *
 
 
-
-def flush_keyboard():
-    '''
-    empties keyboard buffer
-    '''
-    while has_kb_msg(): tmp = get_key()
-
-def random_spice(number, qty, c):
-    '''
-    Draws 'spice' (aka nebulae) on the screen.
-    number = number of nebulaes
-    qty = size of nebulae
-    c = color
-    '''
-
-    step_x = int(screen_width / (number + 1))
-    y = randint(screen_height/2, screen_height/2 + 100)
-
-    set_write_mode(mode_ADD)
-
-    for k in range(number):
-        x = step_x * (k + 1) + randint(0 - step_x, step_x)
-        set_color(c)
-        set_fill_color(c)
-        for k1 in range(qty):
-            r = randint(1,5)
-            if randint(0, 1): fill_circle(x,y,r)
-            else:
-                if randint(0, 1): fill_rect(x, y, x+r, y+r)
-                else: fill_rect(x-r, y-r, x, y)
-            
-            
-            x+= r * (randint(0,1)*2-1)
-            y+= r * (randint(0,1)*2-1)
-            if y > lower_limit: y = screen_height - 50
-            elif y < upper_limit: y = 100
-        
-
-    set_write_mode(0)
-    
+   
 
 
 def collapsing_xor_circle(x, y, r = 30):
@@ -167,112 +127,20 @@ def expanding_circle(x, y, r = 25):
     put_pixel(x-2,y-5,Color.BLACK)
     put_pixel(x+2,y-5,Color.BLACK)
 
-def draw_level_select(buf, lvl = None):
-    '''
-    draws (or re-draws) play mode select strings.
-    takes arguments: buf, lvl = None
-    buf = a get_image() image under the select string
-    lvl = current mode to highlight (none is highlighted if None)
-    '''
-    
-    set_font(scores_screen_font)
-    set_color(used_up_color)
 
-    put_image(0, txt_pos_y, buf) #, screen_width, 20)
-    #p.beginNativePainting()
-    for k, m in enumerate(open_modes):
-        draw_rect_text(txt_pos_x[k], txt_pos_y,
-                       100, 20, m, flags = QtCore.Qt.AlignHCenter)
-
-    if lvl != None:
-        set_color(0xFFFFFF)
-        draw_rect_text(txt_pos_x[lvl], txt_pos_y,
-                       100, 20, play_modes[lvl], flags = QtCore.Qt.AlignHCenter)
-
-    
-
-def draw_title_screen(play_mode):
-    set_background_color(0x100328)
-    set_fill_style(1)
-    clear_device()
-    starry_background(15000)
-    random_spice(2, 5000, 0x070101)
-    random_spice(2, 5000, 0x010801)
-    random_spice(2, 7000, 0x060400)
-    random_spice(2, 5000, 0x030012)
-    random_spice(2, 7000, 0x080105)
-    starry_night(1200)
-    clear_excess_screen()
-    print_repka(title_repka_color_1, title_repka_fill_1)
-    print_repka(title_repka_color_2, title_repka_fill_2)
-    print_5 (title_5_color_1, title_5_fill_1)
-    set_antialiasing(False)
-
-    buf = create_image(screen_width, 20)
-    get_image(0, txt_pos_y, screen_width, 20, buf)
-    draw_level_select(buf, play_mode)
-    #save_image('bug_'+str(randint(0,1000))+'.png')
-    return buf
-
-def mode_select(b, m, key):
-    if key == key_left and m > 0:
-        m -= 1
-        draw_level_select(b, m)
-        
-    if key == key_right and m < 2:
-        if open_modes[m+1] != 'locked': m += 1
-        draw_level_select(b, m)
-        
-    return m
-    
-
-def title_screen_wait(buf, m_sel):
-    stars = {}
-
-    # create a dict to hold stars
-    for k in range(default_twinkling_stars):
-        r = randint(150, 255)
-        g = randint(150, 255)
-        b = randint(150, 255)
-        color = (r << 16) + (g << 8) + b
-        stars[k] = [randint(0, screen_width - 1), randint(upper_limit, lower_limit), color, False]
-
-    if has_kb_msg(): a = get_key()
-    a = None
-    aa = None
-    
-
-    ## wait for a key to be _released_ (7)
-    while a != 7 or aa.key in [key_left, key_right]:
-        if has_kb_msg():
-            aa = get_key()
-            a = aa.type
-            if a == 6 and aa.key in [key_left, key_right]:
-                m_sel = mode_select(buf, m_sel, aa.key)
-        k = randint(0, 99)
-
-        # if this star is not active
-        if not stars[k][3]:
-            t = get_pixel(stars[k][0], stars[k][1])
-            if delay_jfps(10): put_pixel(stars[k][0], stars[k][1], stars[k][2])
-            stars[k][2] = t
-            stars[k][3] = True
-
-        else:
-            if delay_jfps(10): put_pixel(stars[k][0], stars[k][1], stars[k][2])
-            stars[k][0] = randint(0, screen_width)
-            stars[k][1] = randint(upper_limit, lower_limit)
-            r = randint(150, 255)
-            g = randint(150, 255)
-            b = randint(150, 255)
-            color = (r << 16) + (g << 8) + b
-            stars[k][2] = color
-            stars[k][3] = False
-
-    #print(aa.key)
-    return aa.key, m_sel
 
 def advance_hero(curpos_x, curpos_y, fps_delay, direction, was_dead):
+    '''
+    draw the player line one pixel forward.
+    Accepts args:
+    x, y - position of the new pixel
+    fps_delay
+    direction (1 or -1)
+    was_dead - in case a bloody trail is needed
+    returns:
+    was_dead
+    '''
+    
     ## Testing for the bloody trail
     if was_dead:
         if delay_jfps(fps_delay):
@@ -399,9 +267,11 @@ def game_core(play_mode):
         draw_bullets(ammo)
 
         ## show starting location, wait for a keypress
+        put_pixel(curpos_x, curpos_y, 0xFFFFFF)
         a = None
         while not a: a = starting_xor_circle(0, curpos_y, 20, fps_delay, 0x00FF00)
-                
+
+        curpos_x += 1
         if a.key == key_up: direction = -1
         elif a.key == key_down: direction = 1
         
@@ -530,6 +400,7 @@ def game_core(play_mode):
                     print('* Jackpot! * ', spc//10, 'pts.')
                     
                 
+                # place collected spice in the vault
                 put_pixel(sx, sy, current_pixel)
                 # print(int(a))
                 #if a > 30: pause()
@@ -583,93 +454,7 @@ def game_core(play_mode):
 
     return level, points
 
-def after_game(level, points, score_table, play_mode):
-    ## game end                
-    # print(points)
 
-    shade_color = color_rgb(0, 0, 0, 170)
-    set_fill_style(1)
-    set_fill_color(shade_color)
-    fill_rect(0,0,screen_width, screen_height + 100)
-
-    set_color(0xFFFF00)
-    #set_line_style(3)
-    #rect(scores_rect_x1, scores_rect_y1, scores_rect_x2, scores_rect_y2)
-
-    print_repka(0xAAAA00, 11, 1)
-
-    scores_screen_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, 4)
-    set_font(scores_screen_font)
-
-    draw_rect_text(scores_rect_x1, scores_rect_y1 - 20,
-                       400, 20, top_scores_modes[play_mode])
-    
-    highscore = 0
-    for k, entry in enumerate(score_table):
-        
-        set_color((((31 - k//2) * 8) << 16) + (((27 - k) * 8) << 8))
-        print_score_place(k)
-
-        if entry[2] < points:
-            score_table.pop()
-            score_table.insert(k, ['', level, points])
-            highscore = k + 1
-            set_color((((31 - k//2) * 8) << 16) + (27 - k) * 8)
-            print_score_level(k, level)
-            set_color((((25 - k) * 8) << 16) + (((31 - k//2) * 8) << 8) + (27 - k) * 8)
-            print_score_points(k, points)
-            points = 0
-
-        else:
-            print_score_name(k, entry[0])
-            set_color((((31 - k//2) * 8) << 16) + (27 - k) * 8)
-            print_score_level(k, entry[1])
-            set_color((((25 - k) * 8) << 16) + (((31 - k//2) * 8) << 8) + (27 - k) * 8)
-            print_score_points(k, entry[2])
-
-    if highscore:
-        k = highscore - 1
-        score_table[k][0] = get_name(k, random_name())
-        set_color((((31 - k//2) * 8) << 16) + (((27 - k) * 8) << 8))
-        print_score_name(k, score_table[k][0])
-        write_table(score_table, play_mode)
-
-        if k == 0 and play_mode != 2:
-            ## make new playmode available
-            if open_modes[play_mode + 1] == 'locked':
-                open_modes[play_mode + 1] = play_modes[play_mode + 1]
-
-    set_color(used_up_color)
-    scores_screen_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, 1)
-    set_font(scores_screen_font)
-    if delay_fps(800): draw_rect_text(100, screen_height + 60, screen_width - 200, 20,
-                                      'F10 to Quit, ESC to Title screen, any key to Play again')
-    if delay_fps(100): flush_keyboard()
-
-    
-    ## needed for keyboard buffer to flush
-    sleep(0.2)
-
-    a = None
-    
-    while a != 6:
-        if has_kb_msg():
-            aa = get_key()
-            a = aa.type
-   
-    set_fill_style(1)
-    clear_excess_screen()
-    set_color(used_up_color)
-    draw_rect_text(100, screen_height + 60, screen_width - 200, 20, 'One moment...')
-
-    if delay_fps(100): pass
-    flush_keyboard()
-
-    ## needed for keyboard buffer to flush
-    sleep(0.2)
-
-    return aa.key
-    
 def main():
     global music_is_on
     global now_playing
@@ -709,7 +494,8 @@ def main():
         if next_stage != key_ESC:
             
             level, points = game_core(play_mode)
-            points += 1600
+            # testing stuff
+            # points += 1600
             if music_is_on: stop_song()
         else:
             level = 0

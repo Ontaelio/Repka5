@@ -21,6 +21,12 @@ def shar(x, y, c):
      put_pixel(x+2,y+3,Color.BLACK)
      put_pixel(x+1,y+3,Color.BLACK)
 
+def flush_keyboard():
+    '''
+    empties keyboard buffer
+    '''
+    while has_kb_msg(): tmp = get_key()
+
 def draw_ammo_crate(x, y, is_live = True):
 
     if is_live:

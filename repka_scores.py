@@ -2,10 +2,13 @@ import json
 from datetime import date
 from random import *
 from os.path import exists
+from copy import deepcopy
+from time import sleep
 
 from easygraphics import *
 
 from repka_defaults import *
+from repka_title import *
 
 def create_scores(play_mode):
     '''
@@ -16,7 +19,7 @@ def create_scores(play_mode):
     if play_modes[play_mode] != 'skip10':
         return default_score_table
     else:
-        s = default_score_table
+        s = deepcopy(default_score_table)
         for r in s:
             r[1] += 6
         return s
@@ -38,7 +41,7 @@ def check_table(play_mode):
 
     except json.decoder.JSONDecodeError as e:
         print ('Error loading high scores table.')
-        print("Please either delete the file 'repsa5.rep' or check "
+        print(f"Please either delete the file '{filename}' or check "
               "it for consistency")
         return -1
 
@@ -175,17 +178,90 @@ def get_name(line, default_name):
     set_write_mode(0)
     return s
     
+def after_game(level, points, score_table, play_mode):
+    ## game end                
+    # print(points)
+
+    shade_color = color_rgb(0, 0, 0, 170)
+    set_fill_style(1)
+    set_fill_color(shade_color)
+    fill_rect(0,0,screen_width, screen_height + 100)
+
+    set_color(0xFFFF00)
+    #set_line_style(3)
+    #rect(scores_rect_x1, scores_rect_y1, scores_rect_x2, scores_rect_y2)
+
+    print_repka(0xAAAA00, 11, 1)
+
+    scores_screen_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, 4)
+    set_font(scores_screen_font)
+
+    draw_rect_text(scores_rect_x1, scores_rect_y1 - 20,
+                       400, 20, top_scores_modes[play_mode])
     
+    highscore = 0
+    for k, entry in enumerate(score_table):
+        
+        set_color((((31 - k//2) * 8) << 16) + (((27 - k) * 8) << 8))
+        print_score_place(k)
+
+        if entry[2] < points:
+            score_table.pop()
+            score_table.insert(k, ['', level, points])
+            highscore = k + 1
+            set_color((((31 - k//2) * 8) << 16) + (27 - k) * 8)
+            print_score_level(k, level)
+            set_color((((25 - k) * 8) << 16) + (((31 - k//2) * 8) << 8) + (27 - k) * 8)
+            print_score_points(k, points)
+            points = 0
+
+        else:
+            print_score_name(k, entry[0])
+            set_color((((31 - k//2) * 8) << 16) + (27 - k) * 8)
+            print_score_level(k, entry[1])
+            set_color((((25 - k) * 8) << 16) + (((31 - k//2) * 8) << 8) + (27 - k) * 8)
+            print_score_points(k, entry[2])
+
+    if highscore:
+        k = highscore - 1
+        score_table[k][0] = get_name(k, random_name())
+        set_color((((31 - k//2) * 8) << 16) + (((27 - k) * 8) << 8))
+        print_score_name(k, score_table[k][0])
+        write_table(score_table, play_mode)
+
+        if k == 0 and play_mode != 2:
+            ## make new playmode available
+            if open_modes[play_mode + 1] == 'locked':
+                open_modes[play_mode + 1] = play_modes[play_mode + 1]
+
+    set_color(used_up_color)
+    scores_screen_font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, 1)
+    set_font(scores_screen_font)
+    if delay_fps(800): draw_rect_text(100, screen_height + 60, screen_width - 200, 20,
+                                      'F10 to Quit, ESC to Title screen, any key to Play again')
+    if delay_fps(100): flush_keyboard()
+
     
-##init_graph(100,100)
-##s = ''
-##n = -1
-##while 1:
-##    n = get_letter()
-##    print(n)
-##    if n not in [-1, 0, None]:
-##        s += n
-##    elif n == -1: break
-##
-##print(s)
-##        
+    ## needed for keyboard buffer to flush
+    sleep(0.2)
+
+    a = None
+    
+    while a != 6:
+        if has_kb_msg():
+            aa = get_key()
+            a = aa.type
+   
+    set_fill_style(1)
+    clear_excess_screen()
+    set_color(used_up_color)
+    draw_rect_text(100, screen_height + 60, screen_width - 200, 20, 'One moment...')
+
+    if delay_fps(100): pass
+    flush_keyboard()
+
+    ## needed for keyboard buffer to flush
+    sleep(0.2)
+
+    return aa.key
+        

@@ -2,6 +2,8 @@ from easygraphics import *
 from random import *
 
 from repka_defaults import *
+from repka_items import *
+from random import *
 
 # letter blocks
 repka_r = ([0,0],
@@ -75,6 +77,42 @@ t_block_size = (screen_width / 20, 20)
 t_start_point_x = (screen_width / 40, scores_rect_x1 + 5)
 t_start_point_y = (screen_height /6  - 6, scores_rect_y1 - t_block_size[1] * 4 - 37)
 start_point_5 = t_start_point_y[0] + t_block_size[0] * 5 - 20
+
+
+
+def random_spice(number, qty, c):
+    '''
+    Draws 'spice' (aka nebulae) on the screen.
+    number = number of nebulaes
+    qty = size of nebulae
+    c = color
+    '''
+
+    step_x = int(screen_width / (number + 1))
+    y = randint(screen_height/2, screen_height/2 + 100)
+
+    set_write_mode(mode_ADD)
+
+    for k in range(number):
+        x = step_x * (k + 1) + randint(0 - step_x, step_x)
+        set_color(c)
+        set_fill_color(c)
+        for k1 in range(qty):
+            r = randint(1,5)
+            if randint(0, 1): fill_circle(x,y,r)
+            else:
+                if randint(0, 1): fill_rect(x, y, x+r, y+r)
+                else: fill_rect(x-r, y-r, x, y)
+            
+            
+            x+= r * (randint(0,1)*2-1)
+            y+= r * (randint(0,1)*2-1)
+            if y > lower_limit: y = screen_height - 50
+            elif y < upper_limit: y = 100
+        
+
+    set_write_mode(0)
+ 
 
 def paint_block(x, y, side_size = t_block_size[0]):
     '''
@@ -181,6 +219,110 @@ def print_repka(color, f_style, scale = 0):
 
     #print_5 (0xFFFF00, f_style)
         
+def draw_level_select(buf, lvl = None):
+    '''
+    draws (or re-draws) play mode select strings.
+    takes arguments: buf, lvl = None
+    buf = a get_image() image under the select string
+    lvl = current mode to highlight (none is highlighted if None)
+    '''
+    
+    set_font(scores_screen_font)
+    set_color(used_up_color)
+
+    put_image(0, txt_pos_y, buf) #, screen_width, 20)
+    #p.beginNativePainting()
+    for k, m in enumerate(open_modes):
+        draw_rect_text(txt_pos_x[k], txt_pos_y,
+                       100, 20, m, flags = QtCore.Qt.AlignHCenter)
+
+    if lvl != None:
+        set_color(0xFFFFFF)
+        draw_rect_text(txt_pos_x[lvl], txt_pos_y,
+                       100, 20, play_modes[lvl], flags = QtCore.Qt.AlignHCenter)
+
+    
+
+def draw_title_screen(play_mode):
+    set_background_color(0x100328)
+    set_fill_style(1)
+    clear_device()
+    starry_background(15000)
+    random_spice(2, 5000, 0x070101)
+    random_spice(2, 5000, 0x010801)
+    random_spice(2, 7000, 0x060400)
+    random_spice(2, 5000, 0x030012)
+    random_spice(2, 7000, 0x080105)
+    starry_night(1200)
+    clear_excess_screen()
+    print_repka(title_repka_color_1, title_repka_fill_1)
+    print_repka(title_repka_color_2, title_repka_fill_2)
+    print_5 (title_5_color_1, title_5_fill_1)
+    set_antialiasing(False)
+
+    buf = create_image(screen_width, 20)
+    get_image(0, txt_pos_y, screen_width, 20, buf)
+    draw_level_select(buf, play_mode)
+    #save_image('bug_'+str(randint(0,1000))+'.png')
+    return buf
+
+def mode_select(b, m, key):
+    if key == key_left and m > 0:
+        m -= 1
+        draw_level_select(b, m)
+        
+    if key == key_right and m < 2:
+        if open_modes[m+1] != 'locked': m += 1
+        draw_level_select(b, m)
+        
+    return m
+    
+
+def title_screen_wait(buf, m_sel):
+    stars = {}
+
+    # create a dict to hold stars
+    for k in range(default_twinkling_stars):
+        r = randint(150, 255)
+        g = randint(150, 255)
+        b = randint(150, 255)
+        color = (r << 16) + (g << 8) + b
+        stars[k] = [randint(0, screen_width - 1), randint(upper_limit, lower_limit), color, False]
+
+    if has_kb_msg(): a = get_key()
+    a = None
+    aa = None
+    
+
+    ## wait for a key to be _released_ (7)
+    while a != 7 or aa.key in [key_left, key_right]:
+        if has_kb_msg():
+            aa = get_key()
+            a = aa.type
+            if a == 6 and aa.key in [key_left, key_right]:
+                m_sel = mode_select(buf, m_sel, aa.key)
+        k = randint(0, 99)
+
+        # if this star is not active
+        if not stars[k][3]:
+            t = get_pixel(stars[k][0], stars[k][1])
+            if delay_jfps(10): put_pixel(stars[k][0], stars[k][1], stars[k][2])
+            stars[k][2] = t
+            stars[k][3] = True
+
+        else:
+            if delay_jfps(10): put_pixel(stars[k][0], stars[k][1], stars[k][2])
+            stars[k][0] = randint(0, screen_width)
+            stars[k][1] = randint(upper_limit, lower_limit)
+            r = randint(150, 255)
+            g = randint(150, 255)
+            b = randint(150, 255)
+            color = (r << 16) + (g << 8) + b
+            stars[k][2] = color
+            stars[k][3] = False
+
+    #print(aa.key)
+    return aa.key, m_sel
 
 
     
