@@ -46,7 +46,7 @@ fastest_track = 'acidgod.mod'
 slowest_fps = (28,35,0) ##less_than
 slow_fps = (35,40,0) ##less_than
 normal_fps = (40,40,60)
-fast_fps = (48,48,59) ##more_than
+fast_fps = (48,48,58) ##more_than
 fastest_fps = (60,60,79) ##more_than
 
 def check_music_files():

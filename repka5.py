@@ -39,7 +39,7 @@ from repka_music import *
    
 
 
-def collapsing_xor_circle(x, y, r = 30):
+def collapsing_xor_circle(fps_delay, x, y, r = 30):
     '''
     not used, written for a non-implemented alternative trick ('dive')
     draws a collapsing circle using XOR, blocking
@@ -198,7 +198,11 @@ def game_core(play_mode):
                 play_song(start_track)
                 now_playing = start_track            
             else:
-                track = select_track(fps_delay, play_mode)
+                if play_mode == 2 and level < 10:
+                    track = select_track(fps_delay-1, play_mode)
+                else: track = select_track(fps_delay, play_mode)
+                
+                    
                 #print(track, now_playing)
                 if track != now_playing:
                     #print(f'playing: {now_playing}, changing track')
@@ -268,12 +272,13 @@ def game_core(play_mode):
 
         ## show starting location, wait for a keypress
         put_pixel(curpos_x, curpos_y, 0xFFFFFF)
+
         a = None
         while not a: a = starting_xor_circle(0, curpos_y, 20, fps_delay, 0x00FF00)
-
-        curpos_x += 1
         if a.key == key_up: direction = -1
         elif a.key == key_down: direction = 1
+       
+        curpos_x += 1
         
         ## go through a level
         while curpos_x < screen_width-1:
@@ -344,11 +349,11 @@ def game_core(play_mode):
                     if abs(curpos_x - u[0]) < 10:
                         draw_life_crystal(u[0], u[1], False)
                         draw_life_crystal(lives_per_level * 15 + 15, screen_height + 65)
+                        lives_per_level +=1
                         if play_mode == 2:
                             lives += 1
                             print_lives(lives - 1)
                         else:
-                            lives_per_level +=1
                             if lives_per_level > 3:
                                 lives += 1
                                 print_lives(lives - 1)
@@ -521,5 +526,5 @@ def main():
     if music_is_on: close_music_device()
     
 
-main()
-#easy_run(main)
+#main()
+easy_run(main)
