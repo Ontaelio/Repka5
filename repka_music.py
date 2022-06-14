@@ -8,7 +8,12 @@ music_is_on = 1
 try:
     import miniaudio
     import libxmplite
-except ModuleNotFoundError as e:
+
+    device = miniaudio.PlaybackDevice(output_format=miniaudio.SampleFormat.SIGNED16, nchannels=2, sample_rate=44100)
+    xmp = libxmplite.Xmp()
+    now_playing = ''
+
+except ModuleNotFoundError:
     music_is_on = 0
     print('Music modules not found, music disabled.\n'
           'To enable, please install:\n'
@@ -16,9 +21,7 @@ except ModuleNotFoundError as e:
           '> pip install libxmplite\n')
 
 
-device = miniaudio.PlaybackDevice(output_format=miniaudio.SampleFormat.SIGNED16, nchannels=2, sample_rate=44100)
-xmp = libxmplite.Xmp()
-now_playing = ''
+
 
 '''
 Playlist can be downloaded here:
@@ -78,7 +81,7 @@ def check_music_files():
 
 
     
-def stream_module(xmp: libxmplite.Xmp):
+def stream_module(xmp): # libxmplite.Xmp
     required_frames = yield b""  # generator initialization
     try:
         while True:

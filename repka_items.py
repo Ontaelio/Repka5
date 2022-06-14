@@ -159,7 +159,7 @@ def print_level(level, color = 0xAA0088):
     print level at default location
     '''
     set_color(color)
-    draw_rect_text(screen_width/2 - 100, 10, 200, 36, 'Level: ' + str(level),
+    draw_rect_text(screen_width//2 - 100, 10, 200, 36, 'Level: ' + str(level),
                    flags = QtCore.Qt.AlignHCenter  + QtCore.Qt.AlignTop)
     
 def print_score(points, color = default_score_color):

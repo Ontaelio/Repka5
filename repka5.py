@@ -168,7 +168,7 @@ def game_core(play_mode):
     global now_playing
     
     curpos_x = 0
-    curpos_y = screen_height / 2
+    curpos_y = screen_height // 2
     direction = 1
     fps_delay = default_fps_delay[play_mode]
     was_dead = 0
